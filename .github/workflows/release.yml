@@ -89,8 +89,10 @@ jobs:
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish Release
+        if: steps.create_tag.outputs.tag_created == 'true'
         run: |
-          RELEASE_ID=${{ steps.create_release.outputs.release_id }}
+          RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.inputs.tag_name }}" | jq -r .id)
           curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d "{\"draft\":false}" \
